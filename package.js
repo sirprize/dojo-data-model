@@ -1,8 +1,7 @@
 var profile = (function () {
 
     var miniExcludes = {
-            "dojo-data-model/package": 1//,
-            //"dojo-data-model/package.json": 1
+            "dojo-data-model/package": 1
         },
         amdExcludes = {},
         isTestRe = /\/test\//

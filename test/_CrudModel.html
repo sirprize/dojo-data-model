@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>dojo-data-model/test/MyModel Test</title>
+        <script>
+            var dojoConfig = {
+                async: 1,
+                cacheBust: 1,
+                packages: [
+                    { name: "dojo-data-model", location: "../../.." }
+                ]
+            };
+        </script>
+        <script type="text/javascript" src="../vendor/dojo/dojo/dojo.js"></script>
+        
+        <script type="text/javascript">
+            require([
+                'doh',
+                'dojo/store/JsonRest',
+                'dojo-data-model/test/MyModel',
+                'dojo/domReady!'
+            ], function(
+                doh,
+                JsonRest,
+                MyModel
+            ){
+                doh.register("dojo-data-model/test/MyModel (load() tests)", [
+                    {
+                        name: 'Date Loading',
+                        runTest: function () {
+                            var store = new JsonRest({
+                                    target: null
+                                }),
+
+                                model = MyModel({
+                                    store: store
+                                })
+                            ;
+                            
+                            model.load({
+                                due: '2012-12-21'
+                            });
+                            
+                            doh.assertTrue(typeof model.get('due') === 'object');
+                            doh.assertTrue(model.get('due').getFullYear() === 2012);
+                        }
+                    }
+                ]);
+                
+                doh.register("dojo-data-model/test/MyModel (serialize() tests)", [
+                    {
+                        name: 'Date Loading',
+                        runTest: function () {
+                            var store = new JsonRest({
+                                    target: null
+                                }),
+
+                                model = MyModel({
+                                    store: store
+                                })
+                            ;
+                            
+                            model.set('due', new Date('2012-12-21'));
+                            doh.assertTrue(model.serialize().due === '2012-12-21');
+                        }
+                    }
+                ]);
+
+                doh.register("dojo-data-model/test/MyModel (fetch() tests)", [
+                    {
+                        name: 'Http 200 Response',
+                        timeout: 3000,
+                        runTest: function () {
+                            var d = new doh.Deferred(),
+
+                                store = new JsonRest({
+                                    target: './api/'
+                                }),
+
+                                model = MyModel({
+                                    store: store
+                                })
+                            ;
+
+                            model.fetch('fetch-ok.php').then(
+                                function (m) {
+                                    doh.is(m.get('task'), 'some task');
+                                    d.callback(true);
+                                }
+                            );
+
+                            return d;
+                        }
+                    },
+                    {
+                        name: 'Http 404 Response',
+                        timeout: 3000,
+                        runTest: function () {
+                            var d = new doh.Deferred(),
+
+                                store = new JsonRest({
+                                    target: './api/'
+                                }),
+
+                                model = MyModel({
+                                    store: store
+                                })
+                            ;
+
+                            model.fetch('fetch-not-found.php').then(
+                                null,
+                                function (error) {
+                                    doh.assertTrue(error.code === 'not-found');
+                                    d.callback(true);
+                                }
+                            );
+
+                            return d;
+                        }
+                    },
+                    {
+                        name: 'Http 403 Forbidden',
+                        timeout: 3000,
+                        runTest: function () {
+                            var d = new doh.Deferred(),
+
+                                store = new JsonRest({
+                                    target: './api/'
+                                }),
+
+                                model = MyModel({
+                                    store: store
+                                })
+                            ;
+
+                            model.fetch('fetch-forbidden.php').then(
+                                null,
+                                function (error) {
+                                    doh.assertTrue(error.code === 'forbidden');
+                                    d.callback(true);
+                                }
+                            );
+
+                            return d;
+                        }
+                    }
+                ]);
+                
+                doh.register("dojo-data-model/test/MyModel (create() tests)", [
+                    {
+                        name: 'Client-Side Validation',
+                        timeout: 3000,
+                        runTest: function () {
+                            var d = new doh.Deferred(),
+
+                                store = new JsonRest({
+                                    target: null
+                                }),
+
+                                model = MyModel({
+                                    store: store
+                                })
+                            ;
+                                
+                            model.create().then(
+                                null,
+                                function (error) {
+                                    doh.assertTrue(error.code === 'invalid-input');
+                                    d.callback(true);
+                                }
+                            );
+
+                            return d;
+                        }
+                    },
+                    {
+                        name: 'Http 200 Response',
+                        timeout: 3000,
+                        runTest: function () {
+                            var d = new doh.Deferred(),
+
+                                store = new JsonRest({
+                                    target: './api/create-ok.php'
+                                }),
+
+                                model = MyModel({
+                                    store: store
+                                }),
+                                
+                                task = 'Some task'
+                            ;
+
+                            model.set({
+                                task: task
+                            });
+
+                            model.create().then(
+                                function (m) {
+                                    doh.is(m.get('task'), task);
+                                    d.callback(true);
+                                }
+                            );
+
+                            return d;
+                        }
+                    },
+                    {
+                        name: 'Http 422 Response',
+                        timeout: 3000,
+                        runTest: function () {
+                            var d = new doh.Deferred(),
+
+                                store = new JsonRest({
+                                    target: './api/create-invalid.php'
+                                }),
+
+                                model = MyModel({
+                                    store: store
+                                })
+                            ;
+
+                            model.set({
+                                task: 'Some task'
+                            });
+
+                            model.create().then(
+                                null,
+                                function (error) {
+                                    doh.assertTrue(error.code === 'invalid-input');
+                                    d.callback(true);
+                                }
+                            );
+
+                            return d;
+                        }
+                    }
+                ]);
+                
+                doh.register("dojo-data-model/test/MyModel (update() tests)", [
+                    {
+                        name: 'Client-Side Validation',
+                        timeout: 3000,
+                        runTest: function () {
+                            var d = new doh.Deferred(),
+
+                                store = new JsonRest({
+                                    target: null
+                                }),
+
+                                model = MyModel({
+                                    store: store
+                                })
+                            ;
+
+                            model.set({
+                                id: 'abc'
+                            });
+
+                            model.update().then(
+                                null,
+                                function (error) {
+                                    doh.assertTrue(error.code === 'invalid-input');
+                                    d.callback(true);
+                                }
+                            );
+
+                            return d;
+                        }
+                    },
+                    {
+                        name: 'Http 200 Response',
+                        timeout: 3000,
+                        runTest: function () {
+                            var d = new doh.Deferred(),
+
+                                store = new JsonRest({
+                                    target: './api/'
+                                }),
+
+                                model = MyModel({
+                                    store: store
+                                }),
+                                
+                                task = 'Some task'
+                            ;
+
+                            model.set({
+                                id: 'update-ok.php',
+                                task: task
+                            });
+
+                            model.update().then(
+                                function (m) {
+                                    doh.is(m.get('task'), task);
+                                    d.callback(true);
+                                }
+                            );
+
+                            return d;
+                        }
+                    },
+                    {
+                        name: 'Http 404 Response',
+                        timeout: 3000,
+                        runTest: function () {
+                            var d = new doh.Deferred(),
+
+                                store = new JsonRest({
+                                    target: './api/'
+                                }),
+
+                                model = MyModel({
+                                    store: store
+                                }),
+                                
+                                task = 'Some task'
+                            ;
+
+                            model.set({
+                                id: 'update-not-found.php',
+                                task: task
+                            });
+
+                            model.update().then(
+                                null,
+                                function (error) {
+                                    doh.assertTrue(error.code === 'not-found');
+                                    d.callback(true);
+                                }
+                            );
+
+                            return d;
+                        }
+                    },
+                    {
+                        name: 'Http 422 Response',
+                        timeout: 3000,
+                        runTest: function () {
+                            var d = new doh.Deferred(),
+
+                                store = new JsonRest({
+                                    target: './api/'
+                                }),
+
+                                model = MyModel({
+                                    store: store
+                                })
+                            ;
+
+                            model.set({
+                                id: 'update-invalid.php',
+                                task: 'Some task'
+                            });
+
+                            model.update().then(
+                                null,
+                                function (error) {
+                                    doh.assertTrue(error.code === 'invalid-input');
+                                    d.callback(true);
+                                }
+                            );
+
+                            return d;
+                        }
+                    }
+                ]);
+                
+                doh.run();
+            });
+        </script>
+    </head>
+    
+    <body>
+    </body>
+</html>

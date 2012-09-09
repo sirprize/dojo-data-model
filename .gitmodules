@@ -1,0 +1,6 @@
+[submodule "vendor/dojo/dojo"]
+	path = vendor/dojo/dojo
+	url = git://github.com/dojo/dojo.git
+[submodule "vendor/dojo/util"]
+	path = vendor/dojo/util
+	url = git://github.com/dojo/util.git

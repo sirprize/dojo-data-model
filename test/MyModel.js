@@ -1,12 +1,10 @@
 define([
     "dojo/_base/declare",
     "dojo/date/stamp",
-    "dojo/json",
     "dojo-data-model/_CrudModel"
 ], function (
     declare,
     stamp,
-    json,
     CrudModel
 ) {
     "use strict";
@@ -19,13 +17,13 @@ define([
             'due'
         ],
         
-        dueLoader: function (val) {
+        dueDeserializer: function (val) {
             this.set('due', stamp.fromISOString(val));
         },
         
         dueSerializer: function () {
             if (!this.get('due')) { return null; }
-            return stamp.toISOString(this.get('due')).replace(/(\d{4,4}-\d{2,2}-\d{2,2}).+/, '$1');
+            return stamp.toISOString(this.get('due'), { selector: 'date' });
         },
         
         dueInitializer: function () {

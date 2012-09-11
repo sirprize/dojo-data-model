@@ -23,22 +23,22 @@ define([
 
         constructor: function (args) {
             this.store = args.store;
-            this.errorModel = new DataModel({ props: this.props });
+            this.errorModel = args.errorModel || new DataModel({ props: this.props });
         },
 
         getErrorModel: function () {
             return this.errorModel;
         },
 
-        fetch: function (id) {
+        load: function (id) {
             var deferred = new Deferred();
-            this.promiseOrValue['fetch'] = this.store.get(id);
+            this.promiseOrValue['load'] = this.store.get(id);
             
             when(
-                this.promiseOrValue['fetch'],
+                this.promiseOrValue['load'],
                 lang.hitch(this, function (todo) {
                     if (todo) {
-                        this.load(todo);
+                        this.deserialize(todo);
                         deferred.resolve(this);
                     } else {
                         deferred.reject(this.normalizeSynchronousNotFound());
@@ -52,7 +52,7 @@ define([
             return deferred.promise;
         },
 
-        create: function () {
+        create: function (options) {
             var deferred = new Deferred(), errors = false;
             this.errorModel.initialize();
 
@@ -65,7 +65,7 @@ define([
             if (errors) {
                 deferred.reject(this.normalizeClientSideValidationErrors(errors));
             } else {
-                this.promiseOrValue['add'] = this.store.add(this.serialize());
+                this.promiseOrValue['add'] = this.store.add(this.serialize(), options);
                 
                 when(
                     this.promiseOrValue['add'],
@@ -82,7 +82,7 @@ define([
             return deferred.promise;
         },
         
-        update: function () {
+        update: function (options) {
             var deferred = new Deferred(), errors = false;
             this.errorModel.initialize();
 
@@ -95,7 +95,7 @@ define([
             if (errors) {
                 deferred.reject(this.normalizeClientSideValidationErrors(errors));
             } else {
-                this.promiseOrValue['put'] = this.store.put(this.serialize());
+                this.promiseOrValue['put'] = this.store.put(this.serialize(), options);
                 
                 when(
                     this.promiseOrValue['put'],
@@ -116,7 +116,7 @@ define([
         },
         
         normalizeClientSideValidationErrors: function (errors) {
-            this.errorModel.load(errors);
+            this.errorModel.set(errors);
             return { code: 'invalid-input' };
         },
         

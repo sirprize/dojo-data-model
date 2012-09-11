@@ -15,23 +15,21 @@ define([
         props: [],
         
         constructor: function (args) {
-            if (args.props) {
-                this.props = args.props;
-            }
+            this.props = args.props || this.props;
             this.initialize();
         },
 
-        // load data from storage (and do required transformations)
-        load: function (data) {
-            var loader = null;
+        // load data from storage
+        deserialize: function (data) {
+            var deserializer = null;
             this.initialize();
 
             array.forEach(this.props, lang.hitch(this, function (name) {
                 if (data[name] !== undefined) {
-                    loader = this[name + 'Loader'];
+                    deserializer = this[name + 'Deserializer'];
                     
-                    if (typeof loader === 'function') {
-                        loader.apply(this, [data[name]]);
+                    if (typeof deserializer === 'function') {
+                        deserializer.apply(this, [data[name]]);
                     } else {
                         this.set(name, data[name]);
                     }
@@ -39,7 +37,7 @@ define([
             }));
         },
         
-        // serialize data for starage
+        // collect data for starage
         serialize: function () {
             var data = {}, serializer = null;
             

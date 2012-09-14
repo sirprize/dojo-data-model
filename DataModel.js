@@ -1,18 +1,14 @@
 define([
     "dojo/_base/declare",
-    "dojo/_base/array",
-    "dojo/_base/lang",
     "dojo/Stateful"
 ], function (
     declare,
-    array,
-    lang,
     Stateful
 ) {
     "use strict";
 
     return declare([Stateful], {
-        props: [],
+        props: {},
         
         constructor: function (args) {
             this.props = args.props || this.props;
@@ -21,55 +17,61 @@ define([
 
         // load data from storage
         deserialize: function (data) {
-            var deserializer = null;
+            var deserializer = null, prop = null;
             this.initialize();
+            
+            for (prop in this.props) {
+                if (this.props.hasOwnProperty(prop)) {
+                    if (data[prop] !== undefined) {
+                        deserializer = this[prop + 'Deserializer'];
 
-            array.forEach(this.props, lang.hitch(this, function (name) {
-                if (data[name] !== undefined) {
-                    deserializer = this[name + 'Deserializer'];
-                    
-                    if (typeof deserializer === 'function') {
-                        deserializer.apply(this, [data[name]]);
-                    } else {
-                        this.set(name, data[name]);
+                        if (typeof deserializer === 'function') {
+                            deserializer.apply(this, [data[prop]]);
+                        } else {
+                            this.set(prop, data[prop]);
+                        }
                     }
                 }
-            }));
+            }
         },
         
         // collect data for starage
         serialize: function () {
-            var data = {}, serializer = null;
+            var data = {}, serializer = null, prop = null;
             
-            array.forEach(this.props, lang.hitch(this, function (name) {
-                serializer = this[name + 'Serializer'];
-                
-                if (typeof serializer === 'function') {
-                    data[name] = serializer.apply(this, []);
-                } else {
-                    data[name] = this.get(name);
+            for (prop in this.props) {
+                if (this.props.hasOwnProperty(prop)) {
+                    serializer = this[prop + 'Serializer'];
+
+                    if (typeof serializer === 'function') {
+                        data[prop] = serializer.apply(this, []);
+                    } else {
+                        data[prop] = this.get(prop);
+                    }
                 }
-            }));
+            }
             
             return data;
         },
 
         validate: function () {
-            var errors = [], ok = true, validator = null;
+            var errors = [], ok = true, validator = null, prop = null;
+            
+            for (prop in this.props) {
+                if (this.props.hasOwnProperty(prop)) {
+                    try {
+                        validator = this[prop + 'Validator'];
 
-            array.forEach(this.props, lang.hitch(this, function (name) {
-                try {
-                    validator = this[name + 'Validator'];
-
-                    if (typeof validator === 'function') {
-                        validator.apply(this, []);
+                        if (typeof validator === 'function') {
+                            validator.apply(this, []);
+                        }
+                    } catch (e) {
+                        errors[prop] = e.message;
+                        ok = false;
                     }
-                } catch (e) {
-                    errors[name] = e.message;
-                    ok = false;
                 }
-            }));
-
+            }
+            
             if (!ok) {
                 throw {
                     errors: errors
@@ -78,17 +80,13 @@ define([
         },
         
         initialize: function () {
-            var initializer = null;
+            var prop = null;
             
-            array.forEach(this.props, lang.hitch(this, function (name) {
-                initializer = this[name + 'Initializer'];
-                
-                if (typeof initializer === 'function') {
-                    initializer.apply(this, []);
-                } else {
-                    this.set(name, '');
+            for (prop in this.props) {
+                if (this.props.hasOwnProperty(prop)) {
+                    this.set(prop, this.props[prop]);
                 }
-            }));
+            }
         },
         
         getProps: function () {

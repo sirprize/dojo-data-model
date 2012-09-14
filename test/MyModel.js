@@ -11,11 +11,11 @@ define([
 
     return declare([CrudModel], {
 
-        props: [
-            'id',
-            'task',
-            'due'
-        ],
+        props: {
+            id: '',
+            task: '',
+            due: null
+        },
         
         dueDeserializer: function (val) {
             this.set('due', stamp.fromISOString(val));

@@ -36,9 +36,9 @@
                             var store = ModelStore(MyModel, new Memory({
                                     idProperty: "id",
                                     data: [
-                                        { id: 0, task: 'Task 0', due: '2012-12-21' },
-                                        { id: 1, task: 'Task 1', due: '2013-01-01' },
-                                        { id: 2, task: 'Task 2', due: '2014-01-01' }
+                                        { id: 1, task: 'Task 1', due: '2012-12-21' },
+                                        { id: 2, task: 'Task 2', due: '2013-01-01' },
+                                        { id: 3, task: 'Task 3', due: '2014-01-01' }
                                     ]
                                 })),
                                 collection = store.query({})
@@ -58,9 +58,9 @@
                             var store = Observable(ModelStore(MyModel, new Memory({
                                     idProperty: "id",
                                     data: [
-                                        { id: 0, task: 'Task 0', due: '2012-12-21' },
-                                        { id: 1, task: 'Task 1', due: '2013-01-01' },
-                                        { id: 2, task: 'Task 2', due: '2014-01-01' }
+                                        { id: 1, task: 'Task 1', due: '2012-12-21' },
+                                        { id: 2, task: 'Task 2', due: '2013-01-01' },
+                                        { id: 3, task: 'Task 3', due: '2014-01-01' }
                                     ]
                                 }))),
                                 collection = store.query({});
@@ -154,7 +154,7 @@
                             var d = new doh.Deferred(),
                                 masterStore = Observable(ModelStore(MyModel, new JsonRest({
                                     idProperty: "id",
-                                    target: './ModelCollection/'
+                                    target: './ModelCollection/add.php'
                                 }))),
                                 memoryStore = new Memory({
                                     idProperty: "id"
@@ -170,12 +170,11 @@
                             });
                             
                             model.set({
-                                id: 'add.php',
                                 task: 'Task 3',
                                 due: new Date('2015-01-01')
                             });
                             
-                            model.create();
+                            model.save();
                             
                             return d;
                         }

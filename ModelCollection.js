@@ -17,13 +17,18 @@ define([
         //      A function that wraps the results of a store query with additional
         //      methods.
         // description:
-        //      QueryResults is a basic wrapper that allows for array-like iteration
+        //      ModelCollection behaves just like dojo/store/util/QueryResults and
+        //      is a basic wrapper that allows for array-like iteration
         //      over any kind of returned data from a query.  While the simplest store
         //      will return a plain array of data, other stores may return deferreds or
         //      promises; this wrapper makes sure that *all* results can be treated
         //      the same.
         //
         //      Additional methods include `forEach`, `filter` and `map`.
+        //      
+        //      In constrast to dojo/store/util/QueryResults, this function also
+        //      initializes model objects with the returned data
+        //
         // results: Array|dojo/promise/Promise
         //      The result set as an array, or a promise for an array.
         // returns:
@@ -32,7 +37,7 @@ define([
         //      Query a store and iterate over the results.
         //
         //  |   store.query({ prime: true }).forEach(function (item) {
-        //  |       //  do something
+        //  |       //  do something with model class
         //  |   });
         
         var deferred = null,
@@ -61,7 +66,7 @@ define([
         } else if (!results.then) {
             results = createModules(results);
         } else {
-            deferred = new Deferred(); // replacement promise
+            deferred = new Deferred();
             
             // intercept callbacks of promise returned by store.query()
             results.then(

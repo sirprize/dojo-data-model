@@ -16,87 +16,7 @@
                 doh,
                 JsonRest,
                 MyModel
-            ){
-                doh.register("dojo-data-model/_CrudModel (load() tests)", [
-                    {
-                        name: 'Http 200 Response',
-                        timeout: 3000,
-                        runTest: function () {
-                            var d = new doh.Deferred(),
-
-                                store = new JsonRest({
-                                    target: './_CrudModel/'
-                                }),
-
-                                model = MyModel({
-                                    store: store
-                                })
-                            ;
-
-                            model.load('load-ok.php').then(
-                                function (m) {
-                                    doh.is(m.get('task'), 'some task');
-                                    d.callback(true);
-                                }
-                            );
-
-                            return d;
-                        }
-                    },
-                    {
-                        name: 'Http 404 Response',
-                        timeout: 3000,
-                        runTest: function () {
-                            var d = new doh.Deferred(),
-
-                                store = new JsonRest({
-                                    target: './_CrudModel/'
-                                }),
-
-                                model = MyModel({
-                                    store: store
-                                })
-                            ;
-
-                            model.load('load-not-found.php').then(
-                                null,
-                                function (error) {
-                                    doh.assertTrue(error.code === 'not-found');
-                                    d.callback(true);
-                                }
-                            );
-
-                            return d;
-                        }
-                    },
-                    {
-                        name: 'Http 403 Forbidden',
-                        timeout: 3000,
-                        runTest: function () {
-                            var d = new doh.Deferred(),
-
-                                store = new JsonRest({
-                                    target: './_CrudModel/'
-                                }),
-
-                                model = MyModel({
-                                    store: store
-                                })
-                            ;
-
-                            model.load('load-forbidden.php').then(
-                                null,
-                                function (error) {
-                                    doh.assertTrue(error.code === 'forbidden');
-                                    d.callback(true);
-                                }
-                            );
-
-                            return d;
-                        }
-                    }
-                ]);
-                
+            ){  
                 doh.register("dojo-data-model/_CrudModel (create() tests)", [
                     {
                         name: 'Client-Side Validation',
@@ -113,7 +33,7 @@
                                 })
                             ;
                                 
-                            model.create().then(
+                            model.save().then(
                                 null,
                                 function (error) {
                                     doh.assertTrue(error.code === 'invalid-input');
@@ -145,7 +65,7 @@
                                 task: task
                             });
 
-                            model.create().then(
+                            model.save().then(
                                 function (m) {
                                     doh.is(m.get('task'), task);
                                     d.callback(true);
@@ -174,7 +94,7 @@
                                 task: 'Some task'
                             });
 
-                            model.create().then(
+                            model.save().then(
                                 null,
                                 function (error) {
                                     doh.assertTrue(error.code === 'invalid-input');
@@ -207,7 +127,7 @@
                                 id: 'abc'
                             });
 
-                            model.update().then(
+                            model.save().then(
                                 null,
                                 function (error) {
                                     doh.assertTrue(error.code === 'invalid-input');
@@ -240,7 +160,7 @@
                                 task: task
                             });
 
-                            model.update().then(
+                            model.save().then(
                                 function (m) {
                                     doh.is(m.get('task'), task);
                                     d.callback(true);
@@ -272,7 +192,7 @@
                                 task: task
                             });
 
-                            model.update().then(
+                            model.save().then(
                                 null,
                                 function (error) {
                                     doh.assertTrue(error.code === 'not-found');
@@ -303,7 +223,7 @@
                                 task: 'Some task'
                             });
 
-                            model.update().then(
+                            model.save().then(
                                 null,
                                 function (error) {
                                     doh.assertTrue(error.code === 'invalid-input');

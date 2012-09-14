@@ -30,30 +30,13 @@ define([
             return this.errorModel;
         },
 
-        load: function (id) {
-            var deferred = new Deferred();
-            this.promiseOrValue['load'] = this.store.get(id);
+        save: function (options) {
+            var deferred = new Deferred(),
+                errors = false,
+                method = null,
+                id = this.get(this.store.idProperty)
+            ;
             
-            when(
-                this.promiseOrValue['load'],
-                lang.hitch(this, function (todo) {
-                    if (todo) {
-                        this.deserialize(todo);
-                        deferred.resolve(this);
-                    } else {
-                        deferred.reject(this.normalizeSynchronousNotFound());
-                    }
-                }),
-                lang.hitch(this, function (error) {
-                    deferred.reject(this.normalizeServerError(error));
-                })
-            );
-            
-            return deferred.promise;
-        },
-
-        create: function (options) {
-            var deferred = new Deferred(), errors = false;
             this.errorModel.initialize();
 
             try {
@@ -65,10 +48,12 @@ define([
             if (errors) {
                 deferred.reject(this.normalizeClientSideValidationErrors(errors));
             } else {
-                this.promiseOrValue['add'] = this.store.add(this.serialize(), options);
+                method = (id === null || id === undefined || id === '') ? 'add' : 'put';
+                this.promiseOrValue['save'] = this.store[method](this.serialize(), options);
+                console.info('store.' + method + '()');
                 
                 when(
-                    this.promiseOrValue['add'],
+                    this.promiseOrValue['save'],
                     lang.hitch(this, function (id) {
                         this.set(this.store.idProperty, id);
                         deferred.resolve(this);
@@ -81,40 +66,7 @@ define([
             
             return deferred.promise;
         },
-        
-        update: function (options) {
-            var deferred = new Deferred(), errors = false;
-            this.errorModel.initialize();
 
-            try {
-                this.validate();
-            } catch (e) {
-                errors = e.errors;
-            }
-
-            if (errors) {
-                deferred.reject(this.normalizeClientSideValidationErrors(errors));
-            } else {
-                this.promiseOrValue['put'] = this.store.put(this.serialize(), options);
-                
-                when(
-                    this.promiseOrValue['put'],
-                    lang.hitch(this, function (id) {
-                        deferred.resolve(this);
-                    }),
-                    lang.hitch(this, function (error) {
-                        deferred.reject(this.normalizeServerError(error));
-                    })
-                );
-            }
-            
-            return deferred.promise;
-        },
-        
-        normalizeSynchronousNotFound: function () {
-            return { code: 'not-found' };
-        },
-        
         normalizeClientSideValidationErrors: function (errors) {
             this.errorModel.set(errors);
             return { code: 'invalid-input' };
@@ -138,14 +90,14 @@ define([
             }
             
             if (error.response.status === 422) {
-                this.loadServerSideValidationErrors(error);
+                this.normalizeServerSideValidationErrors(error);
                 return { code: 'invalid-input' };
             }
             
             return { code: 'unknown-error' };
         },
         
-        loadServerSideValidationErrors: function (error) {
+        normalizeServerSideValidationErrors: function (error) {
             // stub
         },
         

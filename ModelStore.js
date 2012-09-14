@@ -27,8 +27,12 @@ function(
                     deferred = null
                 ;
                 
-                if (promiseOrValue.then) {
-                    deferred = new Deferred(); // replacement promise
+                if (!promiseOrValue) {
+                    return null;
+                } else if (!promiseOrValue.then) {
+                    return this.getModelInstance(promiseOrValue);
+                } else {
+                    deferred = new Deferred();
                     
                     // intercept callbacks of promise returned by store.get()
                     promiseOrValue.then(
@@ -43,10 +47,8 @@ function(
                         }
                     );
                     
-                    promiseOrValue = lang.delegate(new Promise(), deferred.promise); // work around frozen deferred.promise
+                    return lang.delegate(new Promise(), deferred.promise); // work around frozen deferred.promise
                 }
-                
-                return promiseOrValue;
             },
             query: function(query, directives){
                 return ModelCollection(store.query(query, directives), modelCreatorCallback);

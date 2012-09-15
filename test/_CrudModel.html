@@ -9,15 +9,19 @@
         <script type="text/javascript">
             require([
                 'doh',
+                'dojo/when',
+                'dojo/store/Memory',
                 'dojo/store/JsonRest',
                 'dojo-data-model/test/MyModel',
                 'dojo/domReady!'
             ], function(
                 doh,
+                when,
+                Memory,
                 JsonRest,
                 MyModel
-            ){  
-                doh.register("dojo-data-model/_CrudModel (create() tests)", [
+            ){
+                doh.register("dojo-data-model/_CrudModel (create/save() tests)", [
                     {
                         name: 'Client-Side Validation',
                         timeout: 3000,
@@ -107,7 +111,7 @@
                     }
                 ]);
                 
-                doh.register("dojo-data-model/_CrudModel (update() tests)", [
+                doh.register("dojo-data-model/_CrudModel (update/save() tests)", [
                     {
                         name: 'Client-Side Validation',
                         timeout: 3000,
@@ -231,6 +235,85 @@
                                 }
                             );
 
+                            return d;
+                        }
+                    }
+                ]);
+                
+                doh.register("dojo-data-model/_CrudModel (remove() tests)", [
+                    {
+                        name: 'remove() ok in synchronous store',
+                        timeout: 3000,
+                        runTest: function () {
+                            
+                            var store = new Memory({ idProperty: "id" }),
+                                myModel = new MyModel({ store: store })
+                            ;
+                            
+                            myModel.deserialize({
+                                task: 'Task 1',
+                                due: '2012-12-21'
+                            });
+                            
+                            myModel.save();
+                            myModel.remove();
+                            doh.assertTrue(myModel.get('id') === '');
+                        }
+                    },
+                    {
+                        name: 'remove() ok in asynchronous store',
+                        timeout: 3000,
+                        runTest: function () {
+                            
+                            var d = new doh.Deferred(),
+                                store = new JsonRest({
+                                     target: './_CrudModel/'
+                                }),
+                                myModel = new MyModel({ store: store })
+                            ;
+
+                            myModel.deserialize({
+                                id: 'remove-ok.php',
+                                task: 'Task 1',
+                                due: '2012-12-21'
+                            });
+
+                            myModel.remove().then(
+                                function (model) {
+                                    doh.assertTrue(myModel.get('id') === '');
+                                    d.callback(true);
+                                }
+                            );
+                            
+                            return d;
+                        }
+                    },
+                    {
+                        name: 'remove() not found in asynchronous store',
+                        timeout: 3000,
+                        runTest: function () {
+                            
+                            var d = new doh.Deferred(),
+                                store = new JsonRest({
+                                     target: './_CrudModel/'
+                                }),
+                                myModel = new MyModel({ store: store })
+                            ;
+
+                            myModel.deserialize({
+                                id: 'remove-not-found.php',
+                                task: 'Task 1',
+                                due: '2012-12-21'
+                            });
+
+                            myModel.remove().then(
+                                null,
+                                function (error) {
+                                    doh.assertTrue(error.code === 'not-found');
+                                    d.callback(true);
+                                }
+                            );
+                            
                             return d;
                         }
                     }

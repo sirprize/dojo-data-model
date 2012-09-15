@@ -143,3 +143,194 @@ Our final model could look something like this:
     });
 
 ## _CrudModel
+
+`_CrudModel` is a mixin adding persistence logic to a data model by means of `save()` and `remove()`. It is mainly designed to work with models that are backed by synchronous or asynchronous object stores but the implementation is quite specific in terms of return values from a server-side API. Here's a quick spec of the assumed server-side API:
+
+### Create An Item
+
+    POST /api/items
+    
+    {
+        task: "Task 1",
+        due: "2012-12-21"
+    }
+
+##### Response
+
+    Status: 201 Created
+    Location: /api/items/123
+    
+    {
+        id: "123",
+        task: "Task 1",
+        due: "2012-12-21"
+    }
+
+### Edit An Item
+
+    PUT /api/items/:id
+    
+    {
+        id: "123",
+        task: "Task 1",
+        due: "2012-12-21"
+    }
+
+##### Response
+
+    Status: 200 OK
+    Location: /api/items/123
+    
+    {
+        id: "123",
+        task: "Task 1",
+        due: "2012-12-21"
+    }
+
+### Delete An Item
+
+    DELETE /api/items/:id
+
+##### Response
+
+    Status: 204 No Content
+
+### Error Responses
+
+There are three different types of errors:
+
+##### Not Found
+
+    404 Not Found
+
+##### Invalid JSON
+
+    400 Bad Request
+
+##### Invalid Fields
+
+    422 Unprocessable Entity
+    
+    {
+        message: 'Validation failed',
+        errors: [
+            {
+                field: 'task',
+                code: 'missing|invalid|exists'
+            }
+        ]
+    }
+
+Now that we know the details of the API to work with, let's get back to our previous model:
+
+    define([
+        "dojo/_base/declare",
+        "dojo/_base/array",
+        "dojo/date/stamp",
+        "dojo-data-model/DataModel",
+        "dojo-data-model/_CrudModel"
+    ], function (
+        declare,
+        array,
+        stamp,
+        DataModel,
+        _CrudModel
+    ) {
+        return declare([DataModel, _CrudModel], {
+            props: {
+                id: '',
+                task: '',
+                due: null
+            },
+            
+            dueDeserializer: function (val) {
+                this.set('due', stamp.fromISOString(val));
+            },
+            
+            dueSerializer: function () {
+                if (!this.get('due')) { return null; }
+                return stamp.toISOString(this.get('due'), { selector: 'date' });
+            },
+            
+            taskValidator: function () {
+                if (!this.get('task')) {
+                    throw new Error('Input required');
+                }
+            },
+            
+            normalizeServerSideValidationErrors: function (error) {
+                var data = json.parse(error.response.data);
+                
+                array.forEach(data.errors, lang.hitch(this, function (error) {
+                    if (this.props[error.field]) {
+                        if (error.field === 'task') {
+                            this.errorModel.set(error.field, 'Input required');
+                        }
+                    }
+                }));
+            }
+        });
+    });
+
+First we've added `_CrudModel` to the dependencies array of `define` and then we added `normalizeServerSideValidationErrors()`. With this method we're taking into account potential server-side validation errors and pack them into an error data model for consumption by our views.
+
+### Persisting A New Item
+
+We'll assume `mylib/TodoItem` as the module id of our data model class and we'll hook it up with a `dojo/store/JsonRest` object store:
+
+    var store = new JsonRest({
+            idProperty: 'id',
+            target: '/api/items'
+        }),
+        todoModel = new TodoItem({ store: store })
+    ;
+    
+    todoModel.set({
+        task: 'Some task',
+        due: new Date(2012, 12, 21)
+    });
+    
+    todoModel.save().then(
+        function (model) {
+            // created ok
+        },
+        function (error) {
+            // handle error
+        }
+    );
+
+The error is a simple object with a `code` property:
+
+    {
+        code: invalid-input | not-found | forbidden | unknown-error
+    }
+
+In case of `invalid-input`, the error details are to be found in `todoModel.getErrorModel()` which itself is an instance of `dojo-data-model/DataModel`:
+
+    {
+        task: 'Input required'
+    }
+
+### Updating An Item
+
+    todoModel.set('task', 'A renamed task');
+    
+    todoModel.save().then(
+        function (model) {
+            // updated ok
+        },
+        function (error) {
+            // handle error
+        }
+    );
+
+### Deleting An Item
+
+    todoModel.remove().then(
+        function (model) {
+            // deleted ok
+        },
+        function (error) {
+            // handle error
+        }
+    );

@@ -66,6 +66,28 @@ define([
             
             return deferred.promise;
         },
+        
+        remove: function (options) {
+            var deferred = new Deferred(),
+                id = this.get(this.store.idProperty)
+            ;
+            
+            this.errorModel.initialize();
+            this.promiseOrValue['remove'] = this.store.remove(id, options);
+            
+            when(
+                this.promiseOrValue['remove'],
+                lang.hitch(this, function () {
+                    this.initialize();
+                    deferred.resolve(this);
+                }),
+                lang.hitch(this, function (error) {
+                    deferred.reject(this.normalizeServerError(error));
+                })
+            );
+            
+            return deferred.promise;
+        },
 
         normalizeClientSideValidationErrors: function (errors) {
             this.errorModel.set(errors);

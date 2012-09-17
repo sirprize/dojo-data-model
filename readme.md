@@ -1,6 +1,7 @@
 # Dojo-data-model
 
 [dojoStateful]: http://dojotoolkit.org/reference-guide/1.8/dojo/Stateful.html
+[dojoStore]: http://dojotoolkit.org/documentation/tutorials/1.8/intro_dojo_store/
 
 Data Model For Dojo Applications
 
@@ -8,17 +9,17 @@ Data Model For Dojo Applications
 
 This package contains the following components:
 
-+ `DataModel` - stateful base class for all data models
-+ `_CrudModel` - mixin for data models backed by a dojo object store
-+ `ModelStore` - store wrapper with modified `get()` and `query()` to return data models instead of raw data objects
-+ `QueryResults` - like `dojo/store/util/QueryResults` but directly initializes data models
++ `DataModel` - stateful base class for data models
++ `ModelStore` - dojo object store wrapper to return data models instead of raw data objects
++ `QueryResults` - like `dojo/store/util/QueryResults` but returns data models
 + `Observable` - wraps `dojo/store/Observable` to work with `ModelStore`
++ `_CrudModel` - example mixin for data models backed by a dojo object store
 
 ## DataModel
 
 `DataModel` is typically used as a base class to hold some application data and logic around that data. `DataModel` itself is based on [dojo/Stateful][dojoStateful] which provides the ability to get and set named properties, including the ability to monitor these properties for changes. `DataModel` adds `serialize()`, `deserialize(rawData)` and `validate()`.
 
-Here's a example of a basic data model class:
+Here's an example of a basic data model class:
 
     define([
         "dojo/_base/declare",
@@ -36,13 +37,13 @@ Here's a example of a basic data model class:
         });
     });
 
-All the model properties must be defined in `model.props` along with their initial value. `serialize()`, `deserialize()` and `validate()` will only work with properties defined in this object.
+All the model properties and their initial values must be defined in `model.props`. `serialize()`, `deserialize()` and `validate()` will only work with properties defined in this object.
 
 ### Setting A Property
 
     model.set('task', 'A new task');
 
-If no custom setter is defined on an object, performing a `set()` will result in the property value being set directly on the object. Check the [dojo/Stateful documentation][dojoStateful] for custom setters if you wish to guard against reserved property and/or method names to avoid collision.
+If no custom setter is defined on an object, performing a `set()` will result in the property value being set directly on the object. Check the [dojo/Stateful documentation][dojoStateful] for custom setters if you wish to guard against potential property and/or method name collisions.
 
 ### Setting Multiple Properties
 
@@ -142,9 +143,78 @@ Our final model could look something like this:
         });
     });
 
+## ModelStore
+
+This is a wrapper for any synchronous or asynchronous [dojo object store][dojoStore]. `get()` directly initializes and returns a data model instead of a raw data object. `query()` returns a modified `dojo-data-model/QueryResults` object which initializes and returns data models:
+
+### Instantiation
+
+    var store = ModelStore(
+        new JsonRest(), // JsonRest, Memory or...
+        declare([DataModel], {...} // data model class definition
+    );
+
+### Usage With Synchronous Store
+
+    var store = ModelStore(new Memory({
+        idProperty: 'id',
+        data: [
+            { id: 0, task: 'Task 1', due: '2012-12-21' },
+            { id: 1, task: 'Task 2', due: '2012-12-21' },
+            { id: 2, task: 'Task 3', due: '2012-12-21' }
+        ]
+    }), MyModel);
+    
+    // store.query()
+    store.query().forEach(function (model) {
+        console.log(model.get('task'));
+    });
+    
+    // store.get()
+    var task = store.get(0).get('task');
+
+### Usage With Asynchronous Store
+
+    var store = ModelStore(new JsonRest({
+        idProperty: 'id',
+        target: '/api'
+    }), MyModel);
+    
+    // using iterative methods on result
+    var results = store.query().forEach(function (model) {
+        console.log(model.get('task'));
+    });
+    
+    // setting result callback
+    results.then(
+        function (models) {
+            models.forEach(function (model) {
+                console.log(model.get('task'));
+            }
+        }
+    )
+    
+    // store.get()
+    store.get(0).then(
+        function (model) {
+            get('task');
+        }
+    );
+
+## Observable
+
+This is a modified version of `dojo/store/Observable` to work with `ModelStore`:
+
+    var store = Observable(ModelStore(new Memory({}), MyModel));
+    var results = store.query({});
+    
+    results.observe(function (model, removedIndex, insertedIndex) {
+        console.log(model.get('task'));
+    });
+
 ## _CrudModel
 
-`_CrudModel` is a mixin adding persistence logic to a data model by means of `save()` and `remove()`. It is mainly designed to work with models that are backed by synchronous or asynchronous object stores but the implementation is quite specific in terms of return values from a server-side API. Here's a quick spec of the assumed server-side API:
+`_CrudModel` is an example mixin adding persistence logic to a data model by means of `save()` and `remove()`. It is designed to work with models that are backed by synchronous or asynchronous object stores. The implementation is quite specific in terms of return values from a server-side API, so you might just take it as a starting point for your own specific solution. Here's a quick spec of the assumed server-side API:
 
 ### Create An Item
 
@@ -273,6 +343,10 @@ Now that we know the details of the API to work with, let's get back to our prev
     });
 
 First we've added `_CrudModel` to the dependencies array of `define` and then we added `normalizeServerSideValidationErrors()`. With this method we're taking into account potential server-side validation errors and pack them into an error data model for consumption by our views.
+
+### Error Data Model
+
+The error data model can be retrieved by `Model.getErrorModel()` and it is the place where client- and server-side errors are set, so our application doesn't have to bother about the source of the problem. The error model itself is also an instance of `DataModel` thus can be watched for property changes. The properties are identical to those of the containing data model object.
 
 ### Persisting A New Item
 

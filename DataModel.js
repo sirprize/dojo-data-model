@@ -55,7 +55,7 @@ define([
         },
 
         validate: function () {
-            var errors = [], ok = true, validator = null, prop = null;
+            var errors = {}, ok = true, validator = null, prop = null;
             
             for (prop in this.props) {
                 if (this.props.hasOwnProperty(prop)) {

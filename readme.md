@@ -11,7 +11,7 @@ This package contains the following components:
 + `DataModel` - stateful base class for all data models
 + `_CrudModel` - mixin for data models backed by a dojo object store
 + `ModelStore` - store wrapper with modified `get()` and `query()` to return data models instead of raw data objects
-+ `ModelCollection` - like `dojo/store/util/QueryResults` but directly initializes data models
++ `QueryResults` - like `dojo/store/util/QueryResults` but directly initializes data models
 + `Observable` - wraps `dojo/store/Observable` to work with `ModelStore`
 
 ## DataModel

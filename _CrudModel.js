@@ -34,6 +34,7 @@ define([
             var deferred = new Deferred(),
                 errors = false,
                 method = null,
+                data = {},
                 id = this.get(this.store.idProperty)
             ;
             
@@ -49,8 +50,13 @@ define([
                 deferred.reject(this.normalizeClientSideValidationErrors(errors));
             } else {
                 method = (id === null || id === undefined || id === '') ? 'add' : 'put';
-                this.promiseOrValue['save'] = this.store[method](this.serialize(), options);
-                console.info('store.' + method + '()');
+                data = this.serialize();
+                
+                if (method === 'add') {
+                    delete data[this.store.idProperty];
+                }
+                
+                this.promiseOrValue['save'] = this.store[method](data, options);
                 
                 when(
                     this.promiseOrValue['save'],

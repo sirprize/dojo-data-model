@@ -3,27 +3,27 @@ define([
     "dojo/Deferred",
     "dojo/promise/Promise",
     "dojo/when",
-    "./ModelCollection"
+    "./QueryResults"
 ],
 function(
     lang,
     Deferred,
     Promise,
     when,
-    ModelCollection
+    QueryResults
 ) {
-    return function(modelClass, store) {
+    return function(store, modelClass) {
         
-        var modelCreatorCallback = function (item) {
+        var getModelInstance = function (item) {
             var model = new modelClass({ store: store });
             model.deserialize(item);
             return model;
         };
         
         return lang.delegate(store, {
-            getModelInstance: modelCreatorCallback,
-            get: function (id) {
-                var promiseOrValue = store.get(id),
+            getModelInstance: getModelInstance,
+            get: function () {
+                var promiseOrValue = store.get.apply(store, arguments),
                     deferred = null
                 ;
                 
@@ -50,8 +50,8 @@ function(
                     return lang.delegate(new Promise(), deferred.promise); // work around frozen deferred.promise
                 }
             },
-            query: function(query, directives){
-                return ModelCollection(store.query(query, directives), modelCreatorCallback);
+            query: function() {
+                return QueryResults(store.query.apply(store, arguments), getModelInstance);
             }
         });
     };

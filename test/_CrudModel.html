@@ -55,7 +55,7 @@
                             var d = new doh.Deferred(),
 
                                 store = new JsonRest({
-                                    target: './_CrudModel/create-ok.php'
+                                    target: './api/default/'
                                 }),
 
                                 model = MyModel({
@@ -86,18 +86,14 @@
                             var d = new doh.Deferred(),
 
                                 store = new JsonRest({
-                                    target: './_CrudModel/create-invalid.php'
+                                    target: './api/invalid/'
                                 }),
 
                                 model = MyModel({
                                     store: store
                                 })
                             ;
-
-                            model.set({
-                                task: 'Some task'
-                            });
-
+                            
                             model.save().then(
                                 null,
                                 function (error) {
@@ -149,7 +145,7 @@
                             var d = new doh.Deferred(),
 
                                 store = new JsonRest({
-                                    target: './_CrudModel/'
+                                    target: './api/default/'
                                 }),
 
                                 model = MyModel({
@@ -160,7 +156,7 @@
                             ;
 
                             model.set({
-                                id: 'update-ok.php',
+                                id: 0,
                                 task: task
                             });
 
@@ -181,7 +177,7 @@
                             var d = new doh.Deferred(),
 
                                 store = new JsonRest({
-                                    target: './_CrudModel/'
+                                    target: './api/not-found/'
                                 }),
 
                                 model = MyModel({
@@ -192,7 +188,7 @@
                             ;
 
                             model.set({
-                                id: 'update-not-found.php',
+                                id: 5,
                                 task: task
                             });
 
@@ -214,7 +210,7 @@
                             var d = new doh.Deferred(),
 
                                 store = new JsonRest({
-                                    target: './_CrudModel/'
+                                    target: './api/invalid/'
                                 }),
 
                                 model = MyModel({
@@ -223,8 +219,7 @@
                             ;
 
                             model.set({
-                                id: 'update-invalid.php',
-                                task: 'Some task'
+                                id: 0
                             });
 
                             model.save().then(
@@ -267,13 +262,13 @@
                             
                             var d = new doh.Deferred(),
                                 store = new JsonRest({
-                                     target: './_CrudModel/'
+                                     target: './api/default/'
                                 }),
                                 myModel = new MyModel({ store: store })
                             ;
 
                             myModel.deserialize({
-                                id: 'remove-ok.php',
+                                id: 0,
                                 task: 'Task 1',
                                 due: '2012-12-21'
                             });
@@ -295,13 +290,13 @@
                             
                             var d = new doh.Deferred(),
                                 store = new JsonRest({
-                                     target: './_CrudModel/'
+                                     target: './api/not-found/'
                                 }),
                                 myModel = new MyModel({ store: store })
                             ;
 
                             myModel.deserialize({
-                                id: 'remove-not-found.php',
+                                id: 5,
                                 task: 'Task 1',
                                 due: '2012-12-21'
                             });

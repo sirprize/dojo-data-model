@@ -11,13 +11,13 @@ define([
     Promise,
     when
 ) {
-    var ModelCollection = function (results, modelCreatorCallback) {
+    var QueryResults = function (results, modelCreatorCallback) {
         
         // summary:
         //      A function that wraps the results of a store query with additional
         //      methods.
         // description:
-        //      ModelCollection behaves just like dojo/store/util/QueryResults and
+        //      QueryResults behaves just like dojo/store/util/QueryResults and
         //      is a basic wrapper that allows for array-like iteration
         //      over any kind of returned data from a query.  While the simplest store
         //      will return a plain array of data, other stores may return deferreds or
@@ -26,8 +26,8 @@ define([
         //
         //      Additional methods include `forEach`, `filter` and `map`.
         //      
-        //      In constrast to dojo/store/util/QueryResults, this function also
-        //      initializes model objects with the returned data
+        //      In constrast to dojo/store/util/QueryResults, this function
+        //      initializes model objects for the returned data
         //
         // results: Array|dojo/promise/Promise
         //      The result set as an array, or a promise for an array.
@@ -41,7 +41,7 @@ define([
         //  |   });
         
         var deferred = null,
-            createModules = function (items) {
+            createModels = function (items) {
                 var models = [];
                 
                 array.forEach(items, function (item) {
@@ -50,28 +50,38 @@ define([
                 
                 return models;
             },
-            addIterativeMethod = function (results, method) {
-                results[method] = function () {
+            addIterativeMethodToPromise = function (promise, method) {
+                promise[method] = function () {
                     var args = arguments;
-                    return results.then(function (items) {
-                        Array.prototype.unshift.call(args, createModules(items));
-                        return ModelCollection(array[method].apply(array, args), modelCreatorCallback);
+                    return promise.then(function (items) {
+                        Array.prototype.unshift.call(args, createModels(items));
+                        return QueryResults(array[method].apply(array, args), modelCreatorCallback);
                     });
                 };
+            },
+            addIterativeMethodToArray = function(models, method) {
+                if (!models[method]) {
+                    models[method] = function () {
+                        return array[method].apply(array, arguments);
+                    };
+                }
             }
         ;
 
         if (!results) {
             return results;
         } else if (!results.then) {
-            results = createModules(results);
+            results = createModels(results);
+            addIterativeMethodToArray(results, "forEach");
+            addIterativeMethodToArray(results, "filter");
+            addIterativeMethodToArray(results, "map");
         } else {
             deferred = new Deferred();
             
             // intercept callbacks of promise returned by store.query()
             results.then(
                 function (r) {
-                    deferred.resolve(createModules(r));
+                    deferred.resolve(createModels(r));
                 },
                 function (error) {
                     deferred.reject(error);
@@ -82,9 +92,9 @@ define([
             );
 
             results = lang.delegate(new Promise(), deferred.promise); // work around frozen deferred.promise
-            addIterativeMethod(results, "forEach");
-            addIterativeMethod(results, "filter");
-            addIterativeMethod(results, "map");
+            addIterativeMethodToPromise(results, "forEach");
+            addIterativeMethodToPromise(results, "filter");
+            addIterativeMethodToPromise(results, "map");
         }
         
         if (!results.total) {
@@ -101,5 +111,5 @@ define([
         return results;
     };
     
-    return ModelCollection;
+    return QueryResults;
 });

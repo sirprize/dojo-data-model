@@ -21,16 +21,6 @@
                 MyModel,
                 ModelStore
             ){
-                var modelInstantiator = function () {
-                    return function (store) {
-                        return function (item) {
-                            var model = new MyModel({ store: store });
-                            model.deserialize(item);
-                            return model;
-                        }
-                    }
-                };
-                
                 doh.register("dojo-data-model/ModelStore (query() tests)", [
                     {
                         name: 'query()',

@@ -291,7 +291,7 @@ There are three different types of errors:
         ]
     }
 
-Now that we know the details of the API to work with, let's get back to our previous model:
+Now that we know the details of the API to work with, let's get back to our data model:
 
     define([
         "dojo/_base/declare",
@@ -350,7 +350,7 @@ The error data model can be retrieved by `Model.getErrorModel()` and it is the p
 
 ### Persisting A New Item
 
-We'll assume `mylib/TodoItem` as the module id of our data model class and we'll hook it up with a `dojo/store/JsonRest` object store:
+We'll assume `mylib/TodoItem` as the module id of our data model class and we'll hook it up with a `dojo/store/JsonRest` object store. the `save()` method will call `store.put()` if the id property of the model is set, otherwise `store.add()` is called.
 
     var store = new JsonRest({
             idProperty: 'id',
@@ -379,7 +379,7 @@ The error is a simple object with a `code` property:
         code: invalid-input | not-found | forbidden | unknown-error
     }
 
-In case of `invalid-input`, the error details are to be found in `todoModel.getErrorModel()` which itself is an instance of `dojo-data-model/DataModel`:
+In case of `invalid-input`, the error details are to be found in `todoModel.getErrorModel()` which returns an instance of `dojo-data-model/DataModel`:
 
     {
         task: 'Input required'

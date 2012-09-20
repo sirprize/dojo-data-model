@@ -1,3 +1,5 @@
+/*global define: true */
+
 define([
     "dojo/_base/declare",
     "dojo/Stateful"
@@ -9,7 +11,7 @@ define([
 
     return declare([Stateful], {
         props: {},
-        
+
         constructor: function (args) {
             this.props = args.props || this.props;
             this.initialize();
@@ -19,7 +21,7 @@ define([
         deserialize: function (data) {
             var deserializer = null, prop = null;
             this.initialize();
-            
+
             for (prop in this.props) {
                 if (this.props.hasOwnProperty(prop)) {
                     if (data[prop] !== undefined) {
@@ -34,11 +36,11 @@ define([
                 }
             }
         },
-        
+
         // collect data for starage
         serialize: function () {
             var data = {}, serializer = null, prop = null;
-            
+
             for (prop in this.props) {
                 if (this.props.hasOwnProperty(prop)) {
                     serializer = this[prop + 'Serializer'];
@@ -50,13 +52,13 @@ define([
                     }
                 }
             }
-            
+
             return data;
         },
 
         validate: function () {
             var errors = {}, ok = true, validator = null, prop = null;
-            
+
             for (prop in this.props) {
                 if (this.props.hasOwnProperty(prop)) {
                     try {
@@ -71,24 +73,24 @@ define([
                     }
                 }
             }
-            
+
             if (!ok) {
                 throw {
                     errors: errors
                 };
             }
         },
-        
+
         initialize: function () {
             var prop = null;
-            
+
             for (prop in this.props) {
                 if (this.props.hasOwnProperty(prop)) {
                     this.set(prop, this.props[prop]);
                 }
             }
         },
-        
+
         getProps: function () {
             return this.props;
         }

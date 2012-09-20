@@ -1,3 +1,5 @@
+/*global define: true */
+
 define([
     "dojo/_base/declare",
     "dojo/_base/array",
@@ -35,9 +37,8 @@ define([
                 errors = false,
                 method = null,
                 data = {},
-                id = this.get(this.store.idProperty)
-            ;
-            
+                id = this.get(this.store.idProperty);
+
             this.errorModel.initialize();
 
             try {
@@ -51,15 +52,15 @@ define([
             } else {
                 method = (id === null || id === undefined || id === '') ? 'add' : 'put';
                 data = this.serialize();
-                
+
                 if (method === 'add') {
                     delete data[this.store.idProperty];
                 }
-                
-                this.promiseOrValue['save'] = this.store[method](data, options);
-                
+
+                this.promiseOrValue.save = this.store[method](data, options);
+
                 when(
-                    this.promiseOrValue['save'],
+                    this.promiseOrValue.save,
                     lang.hitch(this, function (id) {
                         this.set(this.store.idProperty, id);
                         deferred.resolve(this);
@@ -69,20 +70,19 @@ define([
                     })
                 );
             }
-            
+
             return deferred.promise;
         },
-        
+
         remove: function (options) {
             var deferred = new Deferred(),
-                id = this.get(this.store.idProperty)
-            ;
-            
+                id = this.get(this.store.idProperty);
+
             this.errorModel.initialize();
-            this.promiseOrValue['remove'] = this.store.remove(id, options);
-            
+            this.promiseOrValue.remove = this.store.remove(id, options);
+
             when(
-                this.promiseOrValue['remove'],
+                this.promiseOrValue.remove,
                 lang.hitch(this, function () {
                     this.initialize();
                     deferred.resolve(this);
@@ -91,7 +91,7 @@ define([
                     deferred.reject(this.normalizeServerError(error));
                 })
             );
-            
+
             return deferred.promise;
         },
 
@@ -99,36 +99,36 @@ define([
             this.errorModel.set(errors);
             return { code: 'invalid-input' };
         },
-        
+
         normalizeServerError: function (error) {
             if (!error.response) {
                 return { code: 'unknown-error' };
             }
-            
+
             if (error.response.status === 400) {
                 return { code: 'unknown-error' };
             }
-            
+
             if (error.response.status === 403) {
                 return { code: 'forbidden' };
             }
-            
+
             if (error.response.status === 404) {
                 return { code: 'not-found' };
             }
-            
+
             if (error.response.status === 422) {
                 this.normalizeServerSideValidationErrors(error);
                 return { code: 'invalid-input' };
             }
-            
+
             return { code: 'unknown-error' };
         },
-        
+
         normalizeServerSideValidationErrors: function (error) {
             // stub
         },
-        
+
         destroy: function () {
             array.forEach(this.promisOrValue, function (promiseOrValue) {
                 if (promiseOrValue.cancel) {

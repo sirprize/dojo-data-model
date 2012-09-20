@@ -1,3 +1,5 @@
+/*global define: true */
+
 define([
     "dojo/_base/array",
     "dojo/_base/lang",
@@ -11,8 +13,10 @@ define([
     Promise,
     when
 ) {
+    "use strict";
+
     var QueryResults = function (results, modelCreatorCallback) {
-        
+
         // summary:
         //      A function that wraps the results of a store query with additional
         //      methods.
@@ -39,15 +43,15 @@ define([
         //  |   store.query({ prime: true }).forEach(function (item) {
         //  |       //  do something with model class
         //  |   });
-        
+
         var deferred = null,
             createModels = function (items) {
                 var models = [];
-                
+
                 array.forEach(items, function (item) {
                     models[models.length] = modelCreatorCallback(item);
                 });
-                
+
                 return models;
             },
             addIterativeMethodToPromise = function (promise, method) {
@@ -77,7 +81,7 @@ define([
             addIterativeMethodToArray(results, "map");
         } else {
             deferred = new Deferred();
-            
+
             // intercept callbacks of promise returned by store.query()
             results.then(
                 function (r) {
@@ -96,13 +100,13 @@ define([
             addIterativeMethodToPromise(results, "filter");
             addIterativeMethodToPromise(results, "map");
         }
-        
+
         if (!results.total) {
             results.total = when(results, function (results) {
                 return results.length;
             });
         }
-        
+
         if (results.then && Object.freeze) {
             // don't freeze it - otherwise Observable can't add observe() method
             //Object.freeze(results);
@@ -110,6 +114,6 @@ define([
 
         return results;
     };
-    
+
     return QueryResults;
 });

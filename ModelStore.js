@@ -56,6 +56,12 @@ define([
             },
             query: function () {
                 return QueryResults(store.query.apply(store, arguments), getModelInstance);
+            },
+            put: function (model, options) {
+                return store.put(model.serialize(), options);
+            },
+            add: function (model, options) {
+                return store.add(model.serialize(), options);
             }
         });
     };

@@ -17,7 +17,12 @@ define([
 
     return function (store, ModelClass) {
 
-        var getModelInstance = function (item) {
+        var getModelInstance = function (item) {console.dir(item)
+            if (typeof item.deserialize === 'function') {
+                // when doing a put() with dgrid, item is already an initialized model
+                // not sure why though -- todo!
+                return item;
+            }
             var model = new ModelClass({ store: store });
             model.deserialize(item);
             return model;

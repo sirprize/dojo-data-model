@@ -13,7 +13,8 @@ define([
             var result = oldQuery(query, options), oldObserve = result.observe;
             result.observe = function (listener, includeObjectUpdates) {
                 var l = function (item, removedIndex, insertedIndex) {
-                    return listener(store.getModelInstance(item), removedIndex, insertedIndex);
+                    item = (typeof item.deserialize === 'function') ? item : store.getModelInstance(item);
+                    return listener(item, removedIndex, insertedIndex);
                 };
                 return oldObserve(l, includeObjectUpdates);
             };

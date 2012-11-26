@@ -23,19 +23,19 @@ define([
         errorModel: null,
         promiseOrValue: [],
 
-        constructor: function (args) {
+        constructor: function (params) {
             var prop, errorModelProps = {};
-            this.store = args.store;
+            this.store = params.store;
 
-            if (args.errorModel) {
-                this.errorModel = args.errorModel;
+            if (params.errorModel) {
+                this.errorModel = params.errorModel;
             } else {
                 for (prop in this.props) {
                     if (this.props.hasOwnProperty(prop)) {
                         errorModelProps[prop] = '';
                     }
                 }
-                this.errorModel = new DataModel(errorModelProps);
+                this.errorModel = new DataModel({ props: errorModelProps });
             }
         },
 

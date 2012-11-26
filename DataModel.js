@@ -12,8 +12,8 @@ define([
     return declare([Stateful], {
         props: {},
 
-        constructor: function (args) {
-            this.props = args.props || this.props;
+        constructor: function (params) {
+            this.props = params.props || this.props;
             this.initialize();
         },
 

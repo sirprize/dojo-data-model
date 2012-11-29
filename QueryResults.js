@@ -46,10 +46,12 @@ define([
 
         var deferred = null,
             createModels = function (items) {
-                var models = [];
+                var models = [], model = null;
 
                 array.forEach(items, function (item) {
-                    models[models.length] = modelCreatorCallback(item);
+                    model = modelCreatorCallback();
+                    model.deserialize(item);
+                    models[models.length] = model;
                 });
 
                 return models;

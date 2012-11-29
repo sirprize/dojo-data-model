@@ -17,33 +17,36 @@ define([
 
     return function (store, ModelClass) {
 
-        var getModelInstance = function (item) {
-            var model = new ModelClass({ store: store });
-            model.deserialize(item);
-            return model;
+        var getModelInstance = function () {
+            return new ModelClass({ store: store });
         };
 
         return lang.delegate(store, {
             getModelInstance: getModelInstance,
             get: function () {
                 var promiseOrValue = store.get.apply(store, arguments),
-                    deferred = null;
+                    deferred = null,
+                    model = null;
 
                 if (!promiseOrValue) {
                     return null;
                 }
 
                 if (!promiseOrValue.then) {
-                    return this.getModelInstance(promiseOrValue);
+                    model = getModelInstance();
+                    model.deserialize(promiseOrValue);
+                    return model;
                 }
 
                 deferred = new Deferred();
 
                 // intercept callbacks of promise returned by store.get()
                 promiseOrValue.then(
-                    lang.hitch(this, function (r) {
-                        deferred.resolve(this.getModelInstance(r));
-                    }),
+                    function (r) {
+                        model = getModelInstance();
+                        model.deserialize(r);
+                        deferred.resolve(model);
+                    },
                     function (error) {
                         deferred.reject(error);
                     },

@@ -90,7 +90,9 @@ Model validation is supported in the same fashion. For example, if the task prop
 
     taskValidator: function () {
         if (!this.get('task')) {
-            throw new Error('Input required');
+            throw {
+                message: 'Input required'
+            };
         }
     }
 
@@ -137,7 +139,9 @@ Our final model could look something like this:
             
             taskValidator: function () {
                 if (!this.get('task')) {
-                    throw new Error('Input required');
+                    throw {
+                        message: 'Input required'
+                    };
                 }
             }
         });
@@ -324,7 +328,9 @@ Now that we know the details of the API to work with, let's get back to our data
             
             taskValidator: function () {
                 if (!this.get('task')) {
-                    throw new Error('Input required');
+                    throw {
+                        message: 'Input required'
+                    };
                 }
             },
             

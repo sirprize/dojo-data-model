@@ -34,7 +34,9 @@ define([
 
         taskValidator: function () {
             if (!this.get('task')) {
-                throw new Error('Task name required');
+                throw {
+                    message: 'Task name required'
+                };
             }
         }
     });

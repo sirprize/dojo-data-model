@@ -68,7 +68,9 @@ define([
             addIterativeMethodToArray = function(models, method) {
                 if (!models[method]) {
                     models[method] = function () {
-                        return array[method].apply(array, arguments);
+                        var args = arguments;
+                        Array.prototype.unshift.call(args, models);
+                        return array[method].apply(array, args);
                     };
                 }
             }
@@ -108,7 +110,7 @@ define([
                 return results.length;
             });
         }
-
+        
         if (results.then && Object.freeze) {
             // don't freeze it - otherwise Observable can't add observe() method
             //Object.freeze(results);

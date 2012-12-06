@@ -5,7 +5,7 @@ require([
     'dojo/store/JsonRest',
     'dojo-data-model/Observable',
     'dojo-data-model/ModelStore',
-    'dojo-data-model/test/MyModel',
+    'dojo-data-model/tests/MyModel',
     'dojo/domReady!'
 ], function (
     doh,

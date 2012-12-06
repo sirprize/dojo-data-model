@@ -2,7 +2,7 @@ require([
     'doh',
     'dojo/store/JsonRest',
     'dojo/store/Memory',
-    'dojo-data-model/test/MyModel',
+    'dojo-data-model/tests/MyModel',
     'dojo-data-model/ModelStore',
     'dojo/domReady!'
 ], function (

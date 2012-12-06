@@ -1,6 +1,6 @@
 require([
     'doh',
-    'dojo-data-model/test/MyModel',
+    'dojo-data-model/tests/MyModel',
     'dojo/domReady!'
 ], function (
     doh,

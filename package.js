@@ -4,7 +4,7 @@ var profile = (function () {
             "dojo-data-model/package": 1
         },
         amdExcludes = {},
-        isTestRe = /\/test\//
+        isTestRe = /\/tests\//
     ;
 
     return {

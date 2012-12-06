@@ -31,7 +31,7 @@ require([
                     props: { due: null }
                 });
 
-                model.set('due', new Date('2012-12-21'));
+                model.set('due', new Date(2012,11,21));
                 doh.t(model.serialize().due === '2012-12-21');
             }
         },

@@ -414,3 +414,7 @@ In case of `invalid-input`, the error details are to be found in `todoModel.getE
             // handle error
         }
     );
+
+## Running Tests
+
+Running the tests requires Apache (some directives are stored in .htaccess files) and Php (HTTP headers)
